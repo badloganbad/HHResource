@@ -1,6 +1,7 @@
 #if defined(_WIN32) || (_WIN64)
 #include "SDL.h"
 #include "SDl_image.h"
+#include <direct.h>
 #define getcwd _getcwd
 #endif
 
@@ -79,7 +80,7 @@ int main(int argc, char* argv[]) {
 
 	//BACKGROUND STUFF
 	//bkgd things
-	string BKGDdir = images_dir + "test.png";
+	string BKGDdir = images_dir + "background.png";
 	SDL_Rect BKGDpos;
 	BKGDpos.x = 0;
 	BKGDpos.y = 0;
@@ -89,6 +90,18 @@ int main(int argc, char* argv[]) {
 	BKGD = IMG_LoadTexture(renderer, BKGDdir.c_str());
 	//END BACKGROUND STUFF
 
+	//FOREGROUND STUFF
+	//frgd things
+	string FRGDdir = images_dir + "foreground.png";
+	SDL_Rect FRGDpos;
+	FRGDpos.x = 0;
+	FRGDpos.y = -728;
+	FRGDpos.w = 3072;
+	FRGDpos.h = 2304;
+	SDL_Texture * FRGD;
+	FRGD = IMG_LoadTexture(renderer, FRGDdir.c_str());
+	//END FOREGROUND STUFF
+
 
 	//PLAYER STUFF
 	//player setup
@@ -96,7 +109,7 @@ int main(int argc, char* argv[]) {
 	SDL_Point playerCenter;
 	SDL_Rect playerPos;
 	playerPos.x = 0;
-	playerPos.y = 0;
+	playerPos.y = 320;
 	playerPos.w = 128;
 	playerPos.h = 128;
 	playerCenter.x = 64;
@@ -108,7 +121,7 @@ int main(int argc, char* argv[]) {
 	float bob = 0;
 	//update floats for precision
 	float pos_X = 0.0f;
-	float pos_Y = 0.0f;
+	float pos_Y = 320.0f;
 	//END PLAYER STUFF
 
 
@@ -141,7 +154,13 @@ int main(int argc, char* argv[]) {
 
 		//move up
 		if (currentKeyStates[SDL_SCANCODE_W]) {
-			pos_Y -= 300 * deltaTime;
+
+			//move the foreground
+			if (playerPos.y > 384-64 && FRGDpos.y < 1536)
+				FRGDpos.y += (int)1500 * deltaTime + .5;
+			else if (playerPos.y > 0)
+				pos_Y -= 300 * deltaTime;
+
 			if (flipped) {
 				angle += 150 * deltaTime;
 			} else {
@@ -151,7 +170,13 @@ int main(int argc, char* argv[]) {
 
 		//move down
 		if (currentKeyStates[SDL_SCANCODE_S]) {
-			pos_Y += 300 * deltaTime;
+
+			//move the foreground
+			if (playerPos.y < 384 - 64 && FRGDpos.y > -1536)
+				FRGDpos.y -= (int)300 * deltaTime + .5;
+			else if (playerPos.y < 768-128)
+				pos_Y += 300 * deltaTime;
+
 			if (flipped) {
 				angle -= 150 * deltaTime;
 			} else {
@@ -161,7 +186,12 @@ int main(int argc, char* argv[]) {
 
 		//move left
 		if (currentKeyStates[SDL_SCANCODE_A]) {
-			pos_X -= 300 * deltaTime;
+			//move the foreground
+			if(playerPos.x < 512 - 64 && FRGDpos.x < 1)
+				FRGDpos.x += (int)150 * deltaTime + .5;
+			else if(playerPos.x > 0)
+				pos_X -= 300 * deltaTime;
+
 			if (flipped == false) {
 				flipped = true;
 				angle *= -1;
@@ -170,21 +200,16 @@ int main(int argc, char* argv[]) {
 
 		//move right
 		if (currentKeyStates[SDL_SCANCODE_D]) {
-			pos_X += 300 * deltaTime;
+			//move the foreground
+			if(playerPos.x > 512-64 && FRGDpos.x > -2048)
+				FRGDpos.x -= (int)300 * deltaTime +.5;
+			else if(playerPos.x < 1024 - 128)
+				pos_X += 300 * deltaTime;
+
 			if (flipped == true) {
 				flipped = false;
 				angle *= -1;
 			}
-		}
-
-		//move right
-		if (currentKeyStates[SDL_SCANCODE_X]) {
-			angle -= 150 * deltaTime;
-		}
-
-		//move right
-		if (currentKeyStates[SDL_SCANCODE_Z]) {
-			angle += 150 * deltaTime;
 		}
 
 		//Update
@@ -204,6 +229,9 @@ int main(int argc, char* argv[]) {
 
 		//Draw the BKGD
 		SDL_RenderCopy(renderer, BKGD, NULL, &BKGDpos);
+
+		//Draw the FRGD
+		SDL_RenderCopy(renderer, FRGD, NULL, &FRGDpos);
 
 		//Draw the Player
 		if (flipped)
