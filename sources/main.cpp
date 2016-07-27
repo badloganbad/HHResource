@@ -14,6 +14,9 @@
 #include <iostream>
 #include <time.h>
 #include <math.h>
+
+#include "player.h"
+#include "scene.h"
 using namespace std;
 
 //GLOBALS
@@ -49,7 +52,7 @@ int main(int argc, char* argv[]) {
 
 	SDL_Window *window;                    // Declare a pointer
 
-	SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
+	SDL_Init(SDL_INIT_EVERYTHING);              // Initialize SDL2
 
 	// Create an application window with the following settings:
 	window = SDL_CreateWindow("An SDL2 window",                  // window title
@@ -78,6 +81,9 @@ int main(int argc, char* argv[]) {
 	//create the renderer
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+	//CREATE THE PLAYER
+	Player player(renderer, images_dir, 0, 320);
+
 	//BACKGROUND STUFF
 	//bkgd things
 	string BKGDdir = images_dir + "background.png";
@@ -90,6 +96,32 @@ int main(int argc, char* argv[]) {
 	BKGD = IMG_LoadTexture(renderer, BKGDdir.c_str());
 	//END BACKGROUND STUFF
 
+	//MIDGROUND2 STUFF
+	//mdgd things
+	string MDGD2dir = images_dir + "midground2.png";
+	SDL_Rect MDGD2pos;
+	MDGD2pos.x = 0;
+	MDGD2pos.y = -728;
+	MDGD2pos.w = 3072;
+	MDGD2pos.h = 2304;
+	SDL_Texture * MDGD2;
+	MDGD2 = IMG_LoadTexture(renderer, MDGD2dir.c_str());
+	float m2_X = 0, m2_Y = -728;
+	//END MIDGROUND2 STUFF
+
+	//MIDGROUND1 STUFF
+	//mdgd things
+	string MDGD1dir = images_dir + "midground1.png";
+	SDL_Rect MDGD1pos;
+	MDGD1pos.x = 0;
+	MDGD1pos.y = -728;
+	MDGD1pos.w = 3072;
+	MDGD1pos.h = 2304;
+	SDL_Texture * MDGD1;
+	MDGD1 = IMG_LoadTexture(renderer, MDGD1dir.c_str());
+	float m1_X = 0, m1_Y = -728;
+	//END MIDGROUND1 STUFF
+
 	//FOREGROUND STUFF
 	//frgd things
 	string FRGDdir = images_dir + "foreground.png";
@@ -100,29 +132,9 @@ int main(int argc, char* argv[]) {
 	FRGDpos.h = 2304;
 	SDL_Texture * FRGD;
 	FRGD = IMG_LoadTexture(renderer, FRGDdir.c_str());
+	float fr_X = 0, fr_Y = -728;
 	//END FOREGROUND STUFF
 
-
-	//PLAYER STUFF
-	//player setup
-	string playerDIR = images_dir + "player.png";
-	SDL_Point playerCenter;
-	SDL_Rect playerPos;
-	playerPos.x = 0;
-	playerPos.y = 320;
-	playerPos.w = 128;
-	playerPos.h = 128;
-	playerCenter.x = 64;
-	playerCenter.y = 64;
-	SDL_Texture * Player;
-	Player = IMG_LoadTexture(renderer, playerDIR.c_str());
-	bool flipped = false;
-	double angle = 0.0;
-	float bob = 0;
-	//update floats for precision
-	float pos_X = 0.0f;
-	float pos_Y = 320.0f;
-	//END PLAYER STUFF
 
 
 	//bool values to control game states
@@ -156,15 +168,17 @@ int main(int argc, char* argv[]) {
 		if (currentKeyStates[SDL_SCANCODE_W]) {
 
 			//move the foreground
-			if (playerPos.y > 384-64 && FRGDpos.y < 1536)
-				FRGDpos.y += (int)1500 * deltaTime + .5;
-			else if (playerPos.y > 0)
-				pos_Y -= 300 * deltaTime;
+			if (FRGDpos.y < 0 && player.Pos.y < 384 - 64) {
+				fr_Y += (300 * deltaTime);
+				m1_Y += (290 * deltaTime);
+				m2_Y += (280 * deltaTime);
+			} else if (player.Pos.y > 0)
+				player.pos_Y -= 300 * deltaTime;
 
-			if (flipped) {
-				angle += 150 * deltaTime;
+			if (player.flipped) {
+				player.angle += 150 * deltaTime;
 			} else {
-				angle -= 150 * deltaTime;
+				player.angle -= 150 * deltaTime;
 			}
 		}
 
@@ -172,56 +186,64 @@ int main(int argc, char* argv[]) {
 		if (currentKeyStates[SDL_SCANCODE_S]) {
 
 			//move the foreground
-			if (playerPos.y < 384 - 64 && FRGDpos.y > -1536)
-				FRGDpos.y -= (int)300 * deltaTime + .5;
-			else if (playerPos.y < 768-128)
-				pos_Y += 300 * deltaTime;
+			if (FRGDpos.y > -1536 && player.Pos.y > 384 - 64) {
+				fr_Y -= (300 * deltaTime);
+				m1_Y -= (290 * deltaTime);
+				m2_Y -= (280 * deltaTime);
+			} else if (player.Pos.y < 768 - 128)
+				player.pos_Y += 300 * deltaTime;
 
-			if (flipped) {
-				angle -= 150 * deltaTime;
+			if (player.flipped) {
+				player.angle -= 150 * deltaTime;
 			} else {
-				angle += 150 * deltaTime;
+				player.angle += 150 * deltaTime;
 			}
 		}
 
 		//move left
 		if (currentKeyStates[SDL_SCANCODE_A]) {
 			//move the foreground
-			if(playerPos.x < 512 - 64 && FRGDpos.x < 1)
-				FRGDpos.x += (int)150 * deltaTime + .5;
-			else if(playerPos.x > 0)
-				pos_X -= 300 * deltaTime;
+			if (player.Pos.x < 512 - 64 && FRGDpos.x < 1) {
+				fr_X += (300 * deltaTime);
+				m1_X += (280 * deltaTime);
+				m2_X += (260 * deltaTime);
+			} else if (player.Pos.x > 0)
+				player.pos_X -= 300 * deltaTime;
 
-			if (flipped == false) {
-				flipped = true;
-				angle *= -1;
+			if (player.flipped == false) {
+				player.flipped = true;
+				player.angle *= -1;
 			}
 		}
 
 		//move right
 		if (currentKeyStates[SDL_SCANCODE_D]) {
 			//move the foreground
-			if(playerPos.x > 512-64 && FRGDpos.x > -2048)
-				FRGDpos.x -= (int)300 * deltaTime +.5;
-			else if(playerPos.x < 1024 - 128)
-				pos_X += 300 * deltaTime;
+			if (player.Pos.x > 512 - 64 && FRGDpos.x > -2048) {
+				fr_X -= (300 * deltaTime);
+				m1_X -= (280 * deltaTime);
+				m2_X -= (260 * deltaTime);
+			} else if (player.Pos.x < 1024 - 128)
+				player.pos_X += 300 * deltaTime;
 
-			if (flipped == true) {
-				flipped = false;
-				angle *= -1;
+			if (player.flipped == true) {
+				player.flipped = false;
+				player.angle *= -1;
 			}
 		}
 
 		//Update
-		//Update player position code to account for precision loss
-		playerPos.x = (int) (pos_X + 0.5f);
-		playerPos.y = (int) (pos_Y + 0.5f);
-		//for bobbing effect
-		bob+=3 * deltaTime;
-		if(bob >360)
-			bob=0;
-		playerPos.y += (int) 5*sin(bob);
-		angle *= .995;
+		player.update(deltaTime);
+
+		//foreground and midground
+		FRGDpos.x = (int) (fr_X + 0.5f);
+		FRGDpos.y = (int) (fr_Y + 0.5f);
+
+		MDGD1pos.x = (int) (m1_X + 0.5f);
+		MDGD1pos.y = (int) (m1_Y + 0.5f);
+
+		MDGD2pos.x = (int) (m2_X + 0.5f);
+		MDGD2pos.y = (int) (m2_Y + 0.5f);
 
 		//Draw
 		//clear the renderer
@@ -230,16 +252,17 @@ int main(int argc, char* argv[]) {
 		//Draw the BKGD
 		SDL_RenderCopy(renderer, BKGD, NULL, &BKGDpos);
 
+		//Draw the MDGD2
+		SDL_RenderCopy(renderer, MDGD2, NULL, &MDGD2pos);
+
+		//Draw the MDGD1
+		SDL_RenderCopy(renderer, MDGD1, NULL, &MDGD1pos);
+
 		//Draw the FRGD
 		SDL_RenderCopy(renderer, FRGD, NULL, &FRGDpos);
 
 		//Draw the Player
-		if (flipped)
-			SDL_RenderCopyEx(renderer, Player, NULL, &playerPos, angle,
-					&playerCenter, SDL_FLIP_HORIZONTAL);
-		else
-			SDL_RenderCopyEx(renderer, Player, NULL, &playerPos, angle,
-					&playerCenter, SDL_FLIP_NONE);
+		player.draw(renderer);
 
 		//present renderer
 		SDL_RenderPresent(renderer);
