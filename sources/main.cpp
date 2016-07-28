@@ -84,58 +84,14 @@ int main(int argc, char* argv[]) {
 	//CREATE THE PLAYER
 	Player player(renderer, images_dir, 0, 320);
 
-	//BACKGROUND STUFF
-	//bkgd things
-	string BKGDdir = images_dir + "background.png";
-	SDL_Rect BKGDpos;
-	BKGDpos.x = 0;
-	BKGDpos.y = 0;
-	BKGDpos.w = 1024;
-	BKGDpos.h = 768;
-	SDL_Texture * BKGD;
-	BKGD = IMG_LoadTexture(renderer, BKGDdir.c_str());
-	//END BACKGROUND STUFF
+	//create the background images
+	Scenery BKGD(renderer, images_dir, "background.png", 0, 0);
+	Scenery MDGD2(renderer, images_dir, "midground2.png", 0, -728);
+	Scenery MDGD1(renderer, images_dir, "midground1.png", 0, -728);
+	Scenery FRGD(renderer, images_dir, "foreground.png", 0, -728);
 
-	//MIDGROUND2 STUFF
-	//mdgd things
-	string MDGD2dir = images_dir + "midground2.png";
-	SDL_Rect MDGD2pos;
-	MDGD2pos.x = 0;
-	MDGD2pos.y = -728;
-	MDGD2pos.w = 3072;
-	MDGD2pos.h = 2304;
-	SDL_Texture * MDGD2;
-	MDGD2 = IMG_LoadTexture(renderer, MDGD2dir.c_str());
-	float m2_X = 0, m2_Y = -728;
-	//END MIDGROUND2 STUFF
-
-	//MIDGROUND1 STUFF
-	//mdgd things
-	string MDGD1dir = images_dir + "midground1.png";
-	SDL_Rect MDGD1pos;
-	MDGD1pos.x = 0;
-	MDGD1pos.y = -728;
-	MDGD1pos.w = 3072;
-	MDGD1pos.h = 2304;
-	SDL_Texture * MDGD1;
-	MDGD1 = IMG_LoadTexture(renderer, MDGD1dir.c_str());
-	float m1_X = 0, m1_Y = -728;
-	//END MIDGROUND1 STUFF
-
-	//FOREGROUND STUFF
-	//frgd things
-	string FRGDdir = images_dir + "foreground.png";
-	SDL_Rect FRGDpos;
-	FRGDpos.x = 0;
-	FRGDpos.y = -728;
-	FRGDpos.w = 3072;
-	FRGDpos.h = 2304;
-	SDL_Texture * FRGD;
-	FRGD = IMG_LoadTexture(renderer, FRGDdir.c_str());
-	float fr_X = 0, fr_Y = -728;
-	//END FOREGROUND STUFF
-
-
+	BKGD.Pos.w = 1024;
+	BKGD.Pos.h = 768;
 
 	//bool values to control game states
 	bool quit = false;
@@ -168,17 +124,17 @@ int main(int argc, char* argv[]) {
 		if (currentKeyStates[SDL_SCANCODE_W]) {
 
 			//move the foreground
-			if (FRGDpos.y < 0 && player.Pos.y < 384 - 64) {
-				fr_Y += (300 * deltaTime);
-				m1_Y += (290 * deltaTime);
-				m2_Y += (280 * deltaTime);
+			if (FRGD.Pos.y < 0 && player.Pos.y < 384 - 64) {
+				FRGD.pos_Y += (300 * deltaTime);
+				MDGD1.pos_Y += (290 * deltaTime);
+				MDGD2.pos_Y += (280 * deltaTime);
 			} else if (player.Pos.y > 0)
 				player.pos_Y -= 300 * deltaTime;
 
 			if (player.flipped) {
-				player.angle += 150 * deltaTime;
+				player.angle += 100 * deltaTime;
 			} else {
-				player.angle -= 150 * deltaTime;
+				player.angle -= 100 * deltaTime;
 			}
 		}
 
@@ -186,27 +142,27 @@ int main(int argc, char* argv[]) {
 		if (currentKeyStates[SDL_SCANCODE_S]) {
 
 			//move the foreground
-			if (FRGDpos.y > -1536 && player.Pos.y > 384 - 64) {
-				fr_Y -= (300 * deltaTime);
-				m1_Y -= (290 * deltaTime);
-				m2_Y -= (280 * deltaTime);
+			if (FRGD.Pos.y > -1536 && player.Pos.y > 384 - 64) {
+				FRGD.pos_Y -= (300 * deltaTime);
+				MDGD1.pos_Y -= (290 * deltaTime);
+				MDGD2.pos_Y -= (280 * deltaTime);
 			} else if (player.Pos.y < 768 - 128)
 				player.pos_Y += 300 * deltaTime;
 
 			if (player.flipped) {
-				player.angle -= 150 * deltaTime;
+				player.angle -= 100 * deltaTime;
 			} else {
-				player.angle += 150 * deltaTime;
+				player.angle += 100 * deltaTime;
 			}
 		}
 
 		//move left
 		if (currentKeyStates[SDL_SCANCODE_A]) {
 			//move the foreground
-			if (player.Pos.x < 512 - 64 && FRGDpos.x < 1) {
-				fr_X += (300 * deltaTime);
-				m1_X += (280 * deltaTime);
-				m2_X += (260 * deltaTime);
+			if (player.Pos.x < 512 - 64 && FRGD.Pos.x < 1) {
+				FRGD.pos_X += (300 * deltaTime);
+				MDGD1.pos_X += (280 * deltaTime);
+				MDGD2.pos_X += (260 * deltaTime);
 			} else if (player.Pos.x > 0)
 				player.pos_X -= 300 * deltaTime;
 
@@ -219,10 +175,10 @@ int main(int argc, char* argv[]) {
 		//move right
 		if (currentKeyStates[SDL_SCANCODE_D]) {
 			//move the foreground
-			if (player.Pos.x > 512 - 64 && FRGDpos.x > -2048) {
-				fr_X -= (300 * deltaTime);
-				m1_X -= (280 * deltaTime);
-				m2_X -= (260 * deltaTime);
+			if (player.Pos.x > 512 - 64 && FRGD.Pos.x > -2048) {
+				FRGD.pos_X -= (300 * deltaTime);
+				MDGD1.pos_X -= (280 * deltaTime);
+				MDGD2.pos_X -= (260 * deltaTime);
 			} else if (player.Pos.x < 1024 - 128)
 				player.pos_X += 300 * deltaTime;
 
@@ -236,37 +192,28 @@ int main(int argc, char* argv[]) {
 		player.update(deltaTime);
 
 		//foreground and midground
-		FRGDpos.x = (int) (fr_X + 0.5f);
-		FRGDpos.y = (int) (fr_Y + 0.5f);
-
-		MDGD1pos.x = (int) (m1_X + 0.5f);
-		MDGD1pos.y = (int) (m1_Y + 0.5f);
-
-		MDGD2pos.x = (int) (m2_X + 0.5f);
-		MDGD2pos.y = (int) (m2_Y + 0.5f);
+		FRGD.update();
+		MDGD1.update();
+		MDGD2.update();
 
 		//Draw
 		//clear the renderer
 		SDL_RenderClear(renderer);
 
 		//Draw the BKGD
-		SDL_RenderCopy(renderer, BKGD, NULL, &BKGDpos);
-
+		BKGD.draw(renderer);
 		//Draw the MDGD2
-		SDL_RenderCopy(renderer, MDGD2, NULL, &MDGD2pos);
-
+		MDGD2.draw(renderer);
 		//Draw the MDGD1
-		SDL_RenderCopy(renderer, MDGD1, NULL, &MDGD1pos);
-
+		MDGD1.draw(renderer);
 		//Draw the FRGD
-		SDL_RenderCopy(renderer, FRGD, NULL, &FRGDpos);
+		FRGD.draw(renderer);
 
 		//Draw the Player
 		player.draw(renderer);
 
 		//present renderer
 		SDL_RenderPresent(renderer);
-
 	}
 
 	// Close and destroy the window

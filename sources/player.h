@@ -67,7 +67,7 @@ public:
 		if (bob > 360)
 			bob = 0;
 		Pos.y += (int) 5 * sin(bob);
-		angle *= .993;
+		angle *= .99;
 
 	}
 

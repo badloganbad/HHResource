@@ -33,26 +33,29 @@ public:
 
 	SDL_Texture * IMAGE;
 
-	float m2_X = 0, m2_Y = -728;
+	float pos_X, pos_Y;// = 0, m2_Y = -728;
 	//END MIDGROUND2 STUFF
 
-	Scenery(SDL_Renderer * renderer, string dir, int x, int y) {
+	Scenery(SDL_Renderer * renderer, string dir, string file, int x, int y) {
 
-		DIR = dir + "midground2.png"; // last thing you did was this
+		DIR = dir + file; // last thing you did was this
 		Pos.x = x;
 		Pos.y = y; // -728
 		Pos.w = 3072;
 		Pos.h = 2304;
 		IMAGE = IMG_LoadTexture(renderer, DIR.c_str());
+		pos_X = x;
+		pos_Y = y;
 
 	}
 
 	void update() {
-
+		Pos.x = (int)(pos_X + 0.5f);
+		Pos.y = (int)(pos_Y + 0.5f);
 	}
 
-	void draw() {
-
+	void draw(SDL_Renderer * renderer) {
+		SDL_RenderCopy(renderer, IMAGE, NULL, &Pos);
 	}
 };
 
