@@ -31,12 +31,34 @@ public:
 	SDL_Point Center;
 	SDL_Rect Pos;
 	SDL_Texture * PlayerIMAGE;
+	int ammoCount;
+	int batCount;
+	int currentHealth;// , maxHealth;
+
+	//health stuff
+	SDL_Rect HBpos;
+	SDL_Texture * hback;
+
+	SDL_Rect HMpos;
+	SDL_Texture * hmiddle;
+	SDL_Texture * hfront;
+
+	//ammo stuff
+	SDL_Rect Apos;
+	SDL_Texture * ammoImage[11];
+
+	//inv stuff
+	SDL_Rect Ipos;
+	SDL_Texture * batImage[3];
+	SDL_Texture * invback;
+
 	bool flipped; // = false;
 	double angle; // = 0.0;
 	float bob; // = 0;
 	//update floats for precision
 	float pos_X;	// = 0.0f;
 	float pos_Y;	// = 320.0f;
+	float fireRate;
 	Player(SDL_Renderer * renderer, string dir, int x, int y) {
 		//PLAYER STUFF
 		//player setup
@@ -48,15 +70,86 @@ public:
 		Center.x = 64;
 		Center.y = 64;
 		PlayerIMAGE = IMG_LoadTexture(renderer, DIR.c_str());
-
+		ammoCount = 10;
+		batCount = 0;
 		flipped = false;
 		angle = 0;
 		bob = 0;
 		pos_X = x; // 0
 		pos_Y = y; //320
+		currentHealth = 100;
+		//maxHealth = 100;
+
+		//health HUD
+		DIR = dir + "hback.png";
+		hback = IMG_LoadTexture(renderer, DIR.c_str());
+		HBpos.x = 350;
+		HBpos.y = 0;
+		HBpos.w = 268;
+		HBpos.h = 69;
+
+		DIR = dir + "hmiddle.png";
+		hmiddle = IMG_LoadTexture(renderer, DIR.c_str());
+		HMpos.x = 350;
+		HMpos.y = 0;
+		HMpos.w = 268;
+		HMpos.h = 69;
+
+		DIR = dir + "hfront.png";
+		hfront = IMG_LoadTexture(renderer, DIR.c_str());
+
+		//ammo stuff
+		Apos.x = 0;
+		Apos.y = 0;
+		Apos.w = 269;
+		Apos.h = 94;
+		DIR = dir + "pumpkin0.png";
+		ammoImage[0] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin1.png";
+		ammoImage[1] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin2.png";
+		ammoImage[2] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin3.png";
+		ammoImage[3] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin4.png";
+		ammoImage[4] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin5.png";
+		ammoImage[5] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin6.png";
+		ammoImage[6] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin7.png";
+		ammoImage[7] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin8.png";
+		ammoImage[8] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin9.png";
+		ammoImage[9] = IMG_LoadTexture(renderer, DIR.c_str());
+		DIR = dir + "pumpkin10.png";
+		ammoImage[10] = IMG_LoadTexture(renderer, DIR.c_str());
+
+		//ammo stuff
+		DIR = dir + "iback.png";
+		invback = IMG_LoadTexture(renderer, DIR.c_str());
+		Ipos.x = 757;
+		Ipos.y = 0;
+		Ipos.w = 267;
+		Ipos.h = 53;
+
+		DIR = dir + "bat1.png";
+		batImage[0] = IMG_LoadTexture(renderer, DIR.c_str());
+
+		DIR = dir + "bat2.png";
+		batImage[1] = IMG_LoadTexture(renderer, DIR.c_str());
+
+		DIR = dir + "bat3.png";
+		batImage[2] = IMG_LoadTexture(renderer, DIR.c_str());
 
 		//END PLAYER STUFF
 	}
+
+	/*void health(SDL_Renderer * renderer, string dir, int x, int y)
+	{
+
+	}*/
 
 	void update(float deltaTime) {
 		//Update player position code to account for precision loss
@@ -68,6 +161,27 @@ public:
 			bob = 0;
 		Pos.y += (int) 5 * sin(bob);
 		angle *= .99;
+		
+		if (ammoCount < 0)
+			ammoCount = 0;
+
+		//if (currentHealth > 100)
+		//{
+		//	currentHealth = 100;
+		//}
+
+		//if (currentHealth < 0)
+		//{
+		//	currentHealth = 0;
+		//}
+
+		//healthbar status
+		//HMpos.w = (currentHealth / 100) * 268;
+
+		if (HMpos.w > 268)
+			HMpos.w = 268;
+
+
 
 	}
 
@@ -78,6 +192,25 @@ public:
 		else
 			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle,
 					&Center, SDL_FLIP_NONE);
+
+
+		//health back
+		SDL_RenderCopy(renderer, hback, NULL, &HBpos);
+		//health middle
+		SDL_RenderCopy(renderer, hmiddle, NULL, &HMpos);
+		//health front
+		SDL_RenderCopy(renderer, hfront, NULL, &HBpos);
+
+		//ammo 
+		SDL_RenderCopy(renderer, ammoImage[ammoCount], NULL, &Apos);
+
+
+		//inventory
+		SDL_RenderCopy(renderer, invback, NULL, &Ipos);
+
+		for (int i = 0; i < batCount; i++)
+		SDL_RenderCopy(renderer, batImage[i], NULL, &Ipos);
+
 
 	}
 

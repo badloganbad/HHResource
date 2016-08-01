@@ -17,6 +17,8 @@
 
 #include "player.h"
 #include "scene.h"
+#include "pickup.h"
+
 using namespace std;
 
 //GLOBALS
@@ -85,10 +87,18 @@ int main(int argc, char* argv[]) {
 	Player player(renderer, images_dir, 0, 320);
 
 	//create the background images
-	Scenery BKGD(renderer, images_dir, "background.png", 0, 0);
+	Scenery BKGD(renderer, images_dir, "instructbkgd.png", 0, 0);
 	Scenery MDGD2(renderer, images_dir, "midground2.png", 0, -728);
 	Scenery MDGD1(renderer, images_dir, "midground1.png", 0, -728);
 	Scenery FRGD(renderer, images_dir, "foreground.png", 0, -728);
+
+	//create the pickups
+	Pickup ammo(renderer, images_dir, "ammo+.png", 500, 200);
+	Pickup health(renderer, images_dir, "health+.png", 500, 400);
+	Pickup damage(renderer, images_dir, "health-.png", 500, 600);
+	Pickup bat1(renderer, images_dir, "item.png", 800, 200);
+	Pickup bat2(renderer, images_dir, "item.png", 800, 400);
+	Pickup bat3(renderer, images_dir, "item.png", 800, 600);
 
 	BKGD.Pos.w = 1024;
 	BKGD.Pos.h = 768;
@@ -103,6 +113,7 @@ int main(int argc, char* argv[]) {
 		thisTime = SDL_GetTicks();
 		deltaTime = (float) (thisTime - lastTime) / 1000;
 		lastTime = thisTime;
+		player.fireRate += 3* deltaTime;
 
 		//check for input events
 		if (SDL_PollEvent(&event)) {
@@ -123,12 +134,12 @@ int main(int argc, char* argv[]) {
 		//move up
 		if (currentKeyStates[SDL_SCANCODE_W]) {
 
-			//move the foreground
-			if (FRGD.Pos.y < 0 && player.Pos.y < 384 - 64) {
-				FRGD.pos_Y += (300 * deltaTime);
-				MDGD1.pos_Y += (290 * deltaTime);
-				MDGD2.pos_Y += (280 * deltaTime);
-			} else if (player.Pos.y > 0)
+			////move the foreground
+			/*//if (FRGD.Pos.y < 0 && player.Pos.y < 384 - 64) {
+			//	FRGD.pos_Y += (300 * deltaTime);
+			//	MDGD1.pos_Y += (290 * deltaTime);
+			//	MDGD2.pos_Y += (280 * deltaTime);
+			//} else */if (player.Pos.y > 0)
 				player.pos_Y -= 300 * deltaTime;
 
 			if (player.flipped) {
@@ -142,11 +153,11 @@ int main(int argc, char* argv[]) {
 		if (currentKeyStates[SDL_SCANCODE_S]) {
 
 			//move the foreground
-			if (FRGD.Pos.y > -1536 && player.Pos.y > 384 - 64) {
+			/*if (FRGD.Pos.y > -1536 && player.Pos.y > 384 - 64) {
 				FRGD.pos_Y -= (300 * deltaTime);
 				MDGD1.pos_Y -= (290 * deltaTime);
 				MDGD2.pos_Y -= (280 * deltaTime);
-			} else if (player.Pos.y < 768 - 128)
+			} else*/ if (player.Pos.y < 768 - 128)
 				player.pos_Y += 300 * deltaTime;
 
 			if (player.flipped) {
@@ -159,11 +170,11 @@ int main(int argc, char* argv[]) {
 		//move left
 		if (currentKeyStates[SDL_SCANCODE_A]) {
 			//move the foreground
-			if (player.Pos.x < 512 - 64 && FRGD.Pos.x < 1) {
+			/*if (player.Pos.x < 512 - 64 && FRGD.Pos.x < 1) {
 				FRGD.pos_X += (300 * deltaTime);
 				MDGD1.pos_X += (280 * deltaTime);
 				MDGD2.pos_X += (260 * deltaTime);
-			} else if (player.Pos.x > 0)
+			} else*/ if (player.Pos.x > 0)
 				player.pos_X -= 300 * deltaTime;
 
 			if (player.flipped == false) {
@@ -175,16 +186,86 @@ int main(int argc, char* argv[]) {
 		//move right
 		if (currentKeyStates[SDL_SCANCODE_D]) {
 			//move the foreground
-			if (player.Pos.x > 512 - 64 && FRGD.Pos.x > -2048) {
+			/*if (player.Pos.x > 512 - 64 && FRGD.Pos.x > -2048) {
 				FRGD.pos_X -= (300 * deltaTime);
 				MDGD1.pos_X -= (280 * deltaTime);
 				MDGD2.pos_X -= (260 * deltaTime);
-			} else if (player.Pos.x < 1024 - 128)
+			} else*/ if (player.Pos.x < 1024 - 128)
 				player.pos_X += 300 * deltaTime;
 
 			if (player.flipped == true) {
 				player.flipped = false;
 				player.angle *= -1;
+			}
+		}
+
+		//spacebar
+		if (currentKeyStates[SDL_SCANCODE_SPACE])
+		{
+			if (player.fireRate > 2)
+			{
+				player.ammoCount--;
+				player.fireRate = 0;
+			}
+		}
+
+		//check for collision - ammo
+		if (SDL_HasIntersection(&player.Pos, &ammo.Pos))
+		{
+			if (ammo.active)
+			{
+				player.ammoCount = 10;
+				ammo.active = false;
+			}
+		}
+
+		//check for collision - health +
+		if (SDL_HasIntersection(&player.Pos, &health.Pos))
+		{
+			if (health.active)
+			{
+				//player.currentHealth = 75;
+				player.HMpos.w += 26;
+				health.active = false;
+			}
+		}
+
+		//check for collision - health -
+		if (SDL_HasIntersection(&player.Pos, &damage.Pos))
+		{
+			if (damage.active)
+			{
+				//player.currentHealth = 25;
+				player.HMpos.w -= 26;
+				damage.active = false;
+			}
+		}
+
+		//check for collision - item 1
+		if (SDL_HasIntersection(&player.Pos, &bat1.Pos))
+		{
+			if (bat1.active)
+			{
+				player.batCount++;
+				bat1.active = false;
+			}
+		}
+		//check for collision - item 2
+		if (SDL_HasIntersection(&player.Pos, &bat2.Pos))
+		{
+			if (bat2.active)
+			{
+				player.batCount++;
+				bat2.active = false;
+			}
+		}
+		//check for collision - item 3
+		if (SDL_HasIntersection(&player.Pos, &bat3.Pos))
+		{
+			if (bat3.active)
+			{
+				player.batCount++;
+				bat3.active = false;
 			}
 		}
 
@@ -203,11 +284,20 @@ int main(int argc, char* argv[]) {
 		//Draw the BKGD
 		BKGD.draw(renderer);
 		//Draw the MDGD2
-		MDGD2.draw(renderer);
+		//MDGD2.draw(renderer);
 		//Draw the MDGD1
-		MDGD1.draw(renderer);
+		//MDGD1.draw(renderer);
 		//Draw the FRGD
-		FRGD.draw(renderer);
+		//FRGD.draw(renderer);
+
+		//draw the ammo
+		ammo.draw(renderer);
+		health.draw(renderer);
+		damage.draw(renderer);
+		bat1.draw(renderer);
+		bat2.draw(renderer);
+		bat3.draw(renderer);
+
 
 		//Draw the Player
 		player.draw(renderer);
