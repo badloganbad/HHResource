@@ -31,9 +31,13 @@ public:
 	SDL_Point Center;
 	SDL_Rect Pos;
 	SDL_Texture * PlayerIMAGE;
+
+	SDL_Point armCenter;
+	SDL_Rect armPos;
+	SDL_Texture * armImage;
 	int ammoCount;
 	int batCount;
-	int currentHealth;// , maxHealth;
+	int currentHealth; // , maxHealth;
 
 	//health stuff
 	SDL_Rect HBpos;
@@ -54,6 +58,7 @@ public:
 
 	bool flipped; // = false;
 	double angle; // = 0.0;
+	double armAngle;
 	float bob; // = 0;
 	//update floats for precision
 	float pos_X;	// = 0.0f;
@@ -70,6 +75,17 @@ public:
 		Center.x = 64;
 		Center.y = 64;
 		PlayerIMAGE = IMG_LoadTexture(renderer, DIR.c_str());
+
+		DIR = dir + "arm.png";
+		armPos.x = x; // 0
+		armPos.y = y; // 320
+		armPos.w = 128;
+		armPos.h = 128;
+		armCenter.x = 60;
+		armCenter.y = 17;
+		armImage = IMG_LoadTexture(renderer, DIR.c_str());
+		armAngle = 0;
+
 		ammoCount = 10;
 		batCount = 0;
 		flipped = false;
@@ -79,6 +95,7 @@ public:
 		pos_Y = y; //320
 		currentHealth = 100;
 		//maxHealth = 100;
+		fireRate = 0;
 
 		//health HUD
 		DIR = dir + "hback.png";
@@ -147,52 +164,60 @@ public:
 	}
 
 	/*void health(SDL_Renderer * renderer, string dir, int x, int y)
-	{
+	 {
 
-	}*/
+	 }*/
 
-	void update(float deltaTime) {
+	void update(float deltaTime, int mx, int my) {
 		//Update player position code to account for precision loss
 		Pos.x = (int) (pos_X + 0.5f);
 		Pos.y = (int) (pos_Y + 0.5f);
+
 		//for bobbing effect
 		bob += 3 * deltaTime;
 		if (bob > 360)
 			bob = 0;
 		Pos.y += (int) 5 * sin(bob);
+
+		armPos.x =  Pos.x + cos(angle);
+		armPos.y = Pos.y + sin(angle);
+
+		double x = (armPos.x + (60)) - (mx);
+		double y = (armPos.y + (17)) - (my);
+		armAngle = atan2(y, x) * 180 / 3.14;
+
 		angle *= .99;
-		
+
 		if (ammoCount < 0)
 			ammoCount = 0;
 
-		//if (currentHealth > 100)
-		//{
-		//	currentHealth = 100;
-		//}
+		if (currentHealth > 100) {
+			currentHealth = 100;
+		}
 
-		//if (currentHealth < 0)
-		//{
-		//	currentHealth = 0;
-		//}
+		if (currentHealth < 0) {
+			currentHealth = 0;
+		}
 
 		//healthbar status
-		//HMpos.w = (currentHealth / 100) * 268;
-
-		if (HMpos.w > 268)
-			HMpos.w = 268;
-
-
+		HMpos.w = 268 * currentHealth / 100;
+		//HMpos.w = HMpos.w / 100;
 
 	}
 
 	void draw(SDL_Renderer * renderer) {
-		if (flipped)
-			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle,
-					&Center, SDL_FLIP_HORIZONTAL);
-		else
-			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle,
-					&Center, SDL_FLIP_NONE);
+		if (flipped) {
+			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle, &Center,
+					SDL_FLIP_HORIZONTAL);
+			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, armAngle, &armCenter,
+					SDL_FLIP_HORIZONTAL);
+		} else {
+			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle, &Center,
+					SDL_FLIP_NONE);
 
+			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, 180+armAngle, &armCenter,
+					SDL_FLIP_NONE);
+		}
 
 		//health back
 		SDL_RenderCopy(renderer, hback, NULL, &HBpos);
@@ -204,13 +229,11 @@ public:
 		//ammo 
 		SDL_RenderCopy(renderer, ammoImage[ammoCount], NULL, &Apos);
 
-
 		//inventory
 		SDL_RenderCopy(renderer, invback, NULL, &Ipos);
 
 		for (int i = 0; i < batCount; i++)
-		SDL_RenderCopy(renderer, batImage[i], NULL, &Ipos);
-
+			SDL_RenderCopy(renderer, batImage[i], NULL, &Ipos);
 
 	}
 

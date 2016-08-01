@@ -8,6 +8,7 @@
 #if defined(__APPLE__)
 #include "SDL2/SDL.h"
 #include "SDL2_image/SDL_image.h"
+#include "unistd.h"
 #endif
 
 #include <stdio.h>
@@ -18,6 +19,7 @@
 #include "player.h"
 #include "scene.h"
 #include "pickup.h"
+#include "turret.h"
 
 using namespace std;
 
@@ -25,6 +27,9 @@ using namespace std;
 float deltaTime = 0.0f;
 int thisTime = 0;
 int lastTime = 0;
+
+int mouseX = 0, mouseY = 0;
+
 
 int main(int argc, char* argv[]) {
 
@@ -96,9 +101,15 @@ int main(int argc, char* argv[]) {
 	Pickup ammo(renderer, images_dir, "ammo+.png", 500, 200);
 	Pickup health(renderer, images_dir, "health+.png", 500, 400);
 	Pickup damage(renderer, images_dir, "health-.png", 500, 600);
-	Pickup bat1(renderer, images_dir, "item.png", 800, 200);
-	Pickup bat2(renderer, images_dir, "item.png", 800, 400);
-	Pickup bat3(renderer, images_dir, "item.png", 800, 600);
+	Pickup *bat[3];
+
+	for (int i = 0; i < 3; i++)
+	{
+		bat[i] = new Pickup(renderer, images_dir, "item.png", 800, 200+i*200);
+	}
+
+	//Make the enemy turrets
+	Turret marksman(renderer, images_dir, 500, 600);
 
 	BKGD.Pos.w = 1024;
 	BKGD.Pos.h = 768;
@@ -122,6 +133,16 @@ int main(int argc, char* argv[]) {
 				quit = true;
 				break;
 			}
+		}
+
+		switch(event.type)
+		{
+
+		case SDL_MOUSEMOTION:
+			mouseX = event.button.x;
+			mouseY = event.button.y;
+			break;
+
 		}
 
 		//to quit the game
@@ -224,8 +245,7 @@ int main(int argc, char* argv[]) {
 		{
 			if (health.active)
 			{
-				//player.currentHealth = 75;
-				player.HMpos.w += 26;
+				player.currentHealth += 25;
 				health.active = false;
 			}
 		}
@@ -235,42 +255,31 @@ int main(int argc, char* argv[]) {
 		{
 			if (damage.active)
 			{
-				//player.currentHealth = 25;
-				player.HMpos.w -= 26;
+				player.currentHealth -= 10;
 				damage.active = false;
 			}
 		}
 
+		for(int i = 0; i < 3; i++)
+		{
 		//check for collision - item 1
-		if (SDL_HasIntersection(&player.Pos, &bat1.Pos))
+		if (SDL_HasIntersection(&player.Pos, &bat[i]->Pos))
 		{
-			if (bat1.active)
+			if (bat[i]->active)
 			{
 				player.batCount++;
-				bat1.active = false;
+				bat[i]->active = false;
 			}
 		}
-		//check for collision - item 2
-		if (SDL_HasIntersection(&player.Pos, &bat2.Pos))
-		{
-			if (bat2.active)
-			{
-				player.batCount++;
-				bat2.active = false;
-			}
-		}
-		//check for collision - item 3
-		if (SDL_HasIntersection(&player.Pos, &bat3.Pos))
-		{
-			if (bat3.active)
-			{
-				player.batCount++;
-				bat3.active = false;
-			}
 		}
 
+
 		//Update
-		player.update(deltaTime);
+		player.update(deltaTime, mouseX, mouseY);
+
+		//player.Pos.x = mouseX;
+		//player.Pos.y = mouseY;
+		marksman.update(deltaTime, player.Pos);
 
 		//foreground and midground
 		FRGD.update();
@@ -294,10 +303,14 @@ int main(int argc, char* argv[]) {
 		ammo.draw(renderer);
 		health.draw(renderer);
 		damage.draw(renderer);
-		bat1.draw(renderer);
-		bat2.draw(renderer);
-		bat3.draw(renderer);
 
+		for (int i = 0; i < 3; i++)
+		{
+			bat[i]->draw(renderer);
+		}
+
+		//draw enemy
+		marksman.draw(renderer);
 
 		//Draw the Player
 		player.draw(renderer);
