@@ -137,6 +137,16 @@ int main(int argc, char* argv[]) {
 
 		switch(event.type)
 		{
+		case SDL_MOUSEBUTTONDOWN:
+			if (event.button.button == SDL_BUTTON_LEFT)
+			{
+				if (player.fireRate > 2)
+				{
+					player.ammoCount--;
+					player.fireRate = 0;
+				}
+			}
+
 
 		case SDL_MOUSEMOTION:
 			mouseX = event.button.x;
@@ -223,11 +233,7 @@ int main(int argc, char* argv[]) {
 		//spacebar
 		if (currentKeyStates[SDL_SCANCODE_SPACE])
 		{
-			if (player.fireRate > 2)
-			{
-				player.ammoCount--;
-				player.fireRate = 0;
-			}
+			
 		}
 
 		//check for collision - ammo

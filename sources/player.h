@@ -81,8 +81,8 @@ public:
 		armPos.y = y; // 320
 		armPos.w = 128;
 		armPos.h = 128;
-		armCenter.x = 60;
-		armCenter.y = 17;
+		armCenter.x = 58;
+		armCenter.y = 16;
 		armImage = IMG_LoadTexture(renderer, DIR.c_str());
 		armAngle = 0;
 
@@ -179,14 +179,17 @@ public:
 			bob = 0;
 		Pos.y += (int) 5 * sin(bob);
 
-		armPos.x =  Pos.x + cos(angle);
-		armPos.y = Pos.y + sin(angle);
+		double ax =  Pos.x + (50 *cos((angle-90) / 180 * 3.14));
+		double ay = Pos.y + (50 *sin((angle-90) / 180 * 3.14));
+
+		armPos.x = (int)(ax);
+		armPos.y = (int)(ay) + 50;
 
 		double x = (armPos.x + (60)) - (mx);
 		double y = (armPos.y + (17)) - (my);
 		armAngle = atan2(y, x) * 180 / 3.14;
 
-		angle *= .99;
+		angle *= .995;
 
 		if (ammoCount < 0)
 			ammoCount = 0;
@@ -209,12 +212,13 @@ public:
 		if (flipped) {
 			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle, &Center,
 					SDL_FLIP_HORIZONTAL);
+			armCenter.x = 70;
 			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, armAngle, &armCenter,
 					SDL_FLIP_HORIZONTAL);
 		} else {
 			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle, &Center,
 					SDL_FLIP_NONE);
-
+			armCenter.x = 58;
 			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, 180+armAngle, &armCenter,
 					SDL_FLIP_NONE);
 		}
