@@ -35,6 +35,7 @@ public:
 	float angle;
 	bool active;
 	bool flipped;
+	float pos_X, pos_Y;
 
 	Turret(SDL_Renderer * renderer, string dir, int x, int y) {
 		DIR = dir + "marksman.png";
@@ -49,6 +50,8 @@ public:
 		active = true;
 		angle = 0;
 		flipped = false;
+		pos_X = x;
+		pos_Y = y;
 	}
 
 	void update(float deltaTime, SDL_Rect player) {
@@ -63,16 +66,15 @@ public:
 		if (angle < -360)
 			angle = 0;
 
-		if (angle >90 && angle < 270)
-		{
+		if (angle > 90 && angle < 270) {
 			flipped = true;
-		}
-		else if(angle < -90 && angle > -270)
-		{
+		} else if (angle < -90 && angle > -270) {
 			flipped = true;
-		}
-		else
+		} else
 			flipped = false;
+
+		Pos.x = (int)(pos_X + 0.5);
+		Pos.y = (int)(pos_Y + 0.5);
 
 	}
 
@@ -84,6 +86,22 @@ public:
 			SDL_RenderCopyEx(renderer, image, NULL, &Pos, angle, &Center,
 					SDL_FLIP_NONE);
 
+	}
+
+	inline void move(float modifier, int direction, float deltaTime) {
+		if (direction == 0) //up
+				{
+			pos_Y -= ((300 - modifier) * deltaTime);
+		} else if (direction == 1) //down
+				{
+			pos_Y += ((300 - modifier) * deltaTime);
+		} else if (direction == 2) //left
+				{
+			pos_X -= ((300 - modifier) * deltaTime);
+		} else if (direction == 3) //right
+				{
+			pos_X += ((300 - modifier) * deltaTime);
+		}
 	}
 
 };

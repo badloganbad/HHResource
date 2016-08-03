@@ -21,6 +21,9 @@
 #endif
 
 #include <stdio.h>
+#include <vector>
+
+#include "bullet.h"
 
 using namespace std;
 
@@ -55,6 +58,9 @@ public:
 	SDL_Rect Ipos;
 	SDL_Texture * batImage[3];
 	SDL_Texture * invback;
+
+	//bullet list
+	vector<Bullet*> bulletList;
 
 	bool flipped; // = false;
 	double angle; // = 0.0;
@@ -161,6 +167,13 @@ public:
 		batImage[2] = IMG_LoadTexture(renderer, DIR.c_str());
 
 		//END PLAYER STUFF
+
+		//bullet setup
+		for (int i = 0; i < 10; i++) {
+			bulletList.push_back(
+					new Bullet(renderer, dir, "pumkinB.png", 0, 0));
+			bulletList[i]->spinning = true;
+		}
 	}
 
 	/*void health(SDL_Renderer * renderer, string dir, int x, int y)
@@ -179,17 +192,17 @@ public:
 			bob = 0;
 		Pos.y += (int) 5 * sin(bob);
 
-		double ax =  Pos.x + (50 *cos((angle-90) / 180 * 3.14));
-		double ay = Pos.y + (50 *sin((angle-90) / 180 * 3.14));
+		double ax = Pos.x + (50 * cos((angle - 90) / 180 * 3.14));
+		double ay = Pos.y + (50 * sin((angle - 90) / 180 * 3.14));
 
-		armPos.x = (int)(ax);
-		armPos.y = (int)(ay) + 50;
+		armPos.x = (int) (ax);
+		armPos.y = (int) (ay) + 50;
 
 		double x = (armPos.x + (60)) - (mx);
 		double y = (armPos.y + (17)) - (my);
 		armAngle = atan2(y, x) * 180 / 3.14;
 
-		angle *= .995;
+		angle *= .985;// * deltaTime;
 
 		if (ammoCount < 0)
 			ammoCount = 0;
@@ -206,21 +219,33 @@ public:
 		HMpos.w = 268 * currentHealth / 100;
 		//HMpos.w = HMpos.w / 100;
 
+		for (int i = 0; i < bulletList.size(); i++) {
+			if (bulletList[i]->active) {
+				bulletList[i]->update(deltaTime);
+			}
+		}
+
 	}
 
 	void draw(SDL_Renderer * renderer) {
+
+		//draw bullets
+		for (int i = 0; i < bulletList.size(); i++) {
+			bulletList[i]->draw(renderer);
+		}
+
 		if (flipped) {
 			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle, &Center,
 					SDL_FLIP_HORIZONTAL);
 			armCenter.x = 70;
-			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, armAngle, &armCenter,
-					SDL_FLIP_HORIZONTAL);
+			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, armAngle,
+					&armCenter, SDL_FLIP_HORIZONTAL);
 		} else {
 			SDL_RenderCopyEx(renderer, PlayerIMAGE, NULL, &Pos, angle, &Center,
 					SDL_FLIP_NONE);
 			armCenter.x = 58;
-			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, 180+armAngle, &armCenter,
-					SDL_FLIP_NONE);
+			SDL_RenderCopyEx(renderer, armImage, NULL, &armPos, 180 + armAngle,
+					&armCenter, SDL_FLIP_NONE);
 		}
 
 		//health back
@@ -239,6 +264,31 @@ public:
 		for (int i = 0; i < batCount; i++)
 			SDL_RenderCopy(renderer, batImage[i], NULL, &Ipos);
 
+	}
+
+	inline void move(float modifier, int direction, float deltaTime) {
+		if (direction == 0) //up
+				{
+			pos_Y -= ((300 - modifier) * deltaTime);
+		} else if (direction == 1) //down
+				{
+			pos_Y += ((300 - modifier) * deltaTime);
+		} else if (direction == 2) //left
+				{
+			pos_X -= ((300 - modifier) * deltaTime);
+		} else if (direction == 3) //right
+				{
+			pos_X += ((300 - modifier) * deltaTime);
+		}
+	}
+
+	void throwPumpkin() {
+		for (int i = 0; i < bulletList.size(); i++) {
+			if (bulletList[i]->active == false) {
+				bulletList[i]->fire(armAngle, Pos);
+				break;
+			}
+		}
 	}
 
 };

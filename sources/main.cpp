@@ -30,7 +30,6 @@ int lastTime = 0;
 
 int mouseX = 0, mouseY = 0;
 
-
 int main(int argc, char* argv[]) {
 
 #if defined(_WIN32) || (_WIN64)
@@ -88,11 +87,16 @@ int main(int argc, char* argv[]) {
 	//create the renderer
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+	//transition numbers
+	enum slide {
+		up, down, left, right
+	};
+
 	//CREATE THE PLAYER
 	Player player(renderer, images_dir, 0, 320);
 
 	//create the background images
-	Scenery BKGD(renderer, images_dir, "instructbkgd.png", 0, 0);
+	Scenery BKGD(renderer, images_dir, "background.png", 0, 0);
 	Scenery MDGD2(renderer, images_dir, "midground2.png", 0, -728);
 	Scenery MDGD1(renderer, images_dir, "midground1.png", 0, -728);
 	Scenery FRGD(renderer, images_dir, "foreground.png", 0, -728);
@@ -103,13 +107,16 @@ int main(int argc, char* argv[]) {
 	Pickup damage(renderer, images_dir, "health-.png", 500, 600);
 	Pickup *bat[3];
 
-	for (int i = 0; i < 3; i++)
-	{
-		bat[i] = new Pickup(renderer, images_dir, "item.png", 800, 200+i*200);
+	for (int i = 0; i < 3; i++) {
+		bat[i] = new Pickup(renderer, images_dir, "item.png", 800,
+				200 + i * 200);
 	}
 
 	//Make the enemy turrets
-	Turret marksman(renderer, images_dir, 500, 600);
+	Turret * marksman[3];
+	marksman[0] = new Turret(renderer, images_dir, 1175, 240);
+	marksman[1] = new Turret(renderer, images_dir, 1875, 240);
+	marksman[2] = new Turret(renderer, images_dir, 2515, 240);
 
 	BKGD.Pos.w = 1024;
 	BKGD.Pos.h = 768;
@@ -124,7 +131,7 @@ int main(int argc, char* argv[]) {
 		thisTime = SDL_GetTicks();
 		deltaTime = (float) (thisTime - lastTime) / 1000;
 		lastTime = thisTime;
-		player.fireRate += 3* deltaTime;
+		player.fireRate += 3 * deltaTime;
 
 		//check for input events
 		if (SDL_PollEvent(&event)) {
@@ -135,18 +142,16 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		switch(event.type)
-		{
+		switch (event.type) {
 		case SDL_MOUSEBUTTONDOWN:
-			if (event.button.button == SDL_BUTTON_LEFT)
-			{
-				if (player.fireRate > 2)
-				{
+			if (event.button.button == SDL_BUTTON_LEFT) {
+				if (player.fireRate > 1 && player.ammoCount > 0) {
 					player.ammoCount--;
 					player.fireRate = 0;
+					player.throwPumpkin();
 				}
 			}
-
+			break;
 
 		case SDL_MOUSEMOTION:
 			mouseX = event.button.x;
@@ -165,17 +170,29 @@ int main(int argc, char* argv[]) {
 		//move up
 		if (currentKeyStates[SDL_SCANCODE_W]) {
 
-			////move the foreground
-			/*//if (FRGD.Pos.y < 0 && player.Pos.y < 384 - 64) {
-			//	FRGD.pos_Y += (300 * deltaTime);
-			//	MDGD1.pos_Y += (290 * deltaTime);
-			//	MDGD2.pos_Y += (280 * deltaTime);
-			//} else */if (player.Pos.y > 0)
-				player.pos_Y -= 300 * deltaTime;
+			//move things down
+			if (FRGD.Pos.y < 0 && player.Pos.y < 384 - 64) {
+				FRGD.move(0, down, deltaTime);
+				MDGD1.move(10, down, deltaTime);
+				MDGD2.move(20, down, deltaTime);
+				//bullets
+				for (int i = 0; i < player.bulletList.size(); i++) {
+					if (player.bulletList[i]->active) {
+						player.bulletList[i]->move(0, down, deltaTime);
+					}
+				}
+				//enemies
+				for (int i = 0; i < 3; i++)
+				marksman[i]->move(0, down, deltaTime);
+
+			} else if (player.Pos.y > 0)
+				player.move(0, up, deltaTime);
 
 			if (player.flipped) {
+				if(player.angle < 90)
 				player.angle += 100 * deltaTime;
 			} else {
+				if(player.angle > -90)
 				player.angle -= 100 * deltaTime;
 			}
 		}
@@ -184,16 +201,28 @@ int main(int argc, char* argv[]) {
 		if (currentKeyStates[SDL_SCANCODE_S]) {
 
 			//move the foreground
-			/*if (FRGD.Pos.y > -1536 && player.Pos.y > 384 - 64) {
-				FRGD.pos_Y -= (300 * deltaTime);
-				MDGD1.pos_Y -= (290 * deltaTime);
-				MDGD2.pos_Y -= (280 * deltaTime);
-			} else*/ if (player.Pos.y < 768 - 128)
-				player.pos_Y += 300 * deltaTime;
+			if (FRGD.Pos.y > -1536 && player.Pos.y > 384 - 64) {
+				FRGD.move(0, up, deltaTime);
+				MDGD1.move(10, up, deltaTime);
+				MDGD2.move(20, up, deltaTime);
+				//bullets
+				for (int i = 0; i < player.bulletList.size(); i++) {
+					if (player.bulletList[i]->active) {
+						player.bulletList[i]->move(0, up, deltaTime);
+					}
+				}
+				//enemies
+				for (int i = 0; i < 3; i++)
+				marksman[i]->move(0, up, deltaTime);
+
+			} else if (player.Pos.y < 768 - 128)
+				player.move(0, down, deltaTime);
 
 			if (player.flipped) {
+				if(player.angle > -90)
 				player.angle -= 100 * deltaTime;
 			} else {
+				if(player.angle < 90)
 				player.angle += 100 * deltaTime;
 			}
 		}
@@ -201,12 +230,22 @@ int main(int argc, char* argv[]) {
 		//move left
 		if (currentKeyStates[SDL_SCANCODE_A]) {
 			//move the foreground
-			/*if (player.Pos.x < 512 - 64 && FRGD.Pos.x < 1) {
-				FRGD.pos_X += (300 * deltaTime);
-				MDGD1.pos_X += (280 * deltaTime);
-				MDGD2.pos_X += (260 * deltaTime);
-			} else*/ if (player.Pos.x > 0)
-				player.pos_X -= 300 * deltaTime;
+			if (player.Pos.x < 512 - 64 && FRGD.Pos.x < 1) {
+				FRGD.move(0, right, deltaTime);
+				MDGD1.move(10, right, deltaTime);
+				MDGD2.move(20, right, deltaTime);
+				//bullets
+				for (int i = 0; i < player.bulletList.size(); i++) {
+					if (player.bulletList[i]->active) {
+						player.bulletList[i]->move(0, right, deltaTime);
+					}
+				}
+
+				//enemies
+				for (int i = 0; i < 3; i++)
+				marksman[i]->move(0, right, deltaTime);
+			} else if (player.Pos.x > 0)
+				player.move(0, left, deltaTime);
 
 			if (player.flipped == false) {
 				player.flipped = true;
@@ -217,12 +256,22 @@ int main(int argc, char* argv[]) {
 		//move right
 		if (currentKeyStates[SDL_SCANCODE_D]) {
 			//move the foreground
-			/*if (player.Pos.x > 512 - 64 && FRGD.Pos.x > -2048) {
-				FRGD.pos_X -= (300 * deltaTime);
-				MDGD1.pos_X -= (280 * deltaTime);
-				MDGD2.pos_X -= (260 * deltaTime);
-			} else*/ if (player.Pos.x < 1024 - 128)
-				player.pos_X += 300 * deltaTime;
+			if (player.Pos.x > 512 - 64 && FRGD.Pos.x > -2048) {
+				FRGD.move(0, left, deltaTime);
+				MDGD1.move(10, left, deltaTime);
+				MDGD2.move(20, left, deltaTime);
+				for (int i = 0; i < player.bulletList.size(); i++) {
+					if (player.bulletList[i]->active) {
+						player.bulletList[i]->move(0, left, deltaTime);
+					}
+				}
+
+				//enemies
+				for (int i = 0; i < 3; i++)
+				marksman[i]->move(0, left, deltaTime);
+
+			} else if (player.Pos.x < 1024 - 128)
+				player.move(0, right, deltaTime);
 
 			if (player.flipped == true) {
 				player.flipped = false;
@@ -231,61 +280,51 @@ int main(int argc, char* argv[]) {
 		}
 
 		//spacebar
-		if (currentKeyStates[SDL_SCANCODE_SPACE])
-		{
-			
+		if (currentKeyStates[SDL_SCANCODE_SPACE]) {
+
 		}
 
 		//check for collision - ammo
-		if (SDL_HasIntersection(&player.Pos, &ammo.Pos))
-		{
-			if (ammo.active)
-			{
+		if (SDL_HasIntersection(&player.Pos, &ammo.Pos)) {
+			if (ammo.active) {
 				player.ammoCount = 10;
 				ammo.active = false;
 			}
 		}
 
 		//check for collision - health +
-		if (SDL_HasIntersection(&player.Pos, &health.Pos))
-		{
-			if (health.active)
-			{
+		if (SDL_HasIntersection(&player.Pos, &health.Pos)) {
+			if (health.active) {
 				player.currentHealth += 25;
 				health.active = false;
 			}
 		}
 
 		//check for collision - health -
-		if (SDL_HasIntersection(&player.Pos, &damage.Pos))
-		{
-			if (damage.active)
-			{
+		if (SDL_HasIntersection(&player.Pos, &damage.Pos)) {
+			if (damage.active) {
 				player.currentHealth -= 10;
 				damage.active = false;
 			}
 		}
 
-		for(int i = 0; i < 3; i++)
-		{
-		//check for collision - item 1
-		if (SDL_HasIntersection(&player.Pos, &bat[i]->Pos))
-		{
-			if (bat[i]->active)
-			{
-				player.batCount++;
-				bat[i]->active = false;
+		for (int i = 0; i < 3; i++) {
+			//check for collision - item 1
+			if (SDL_HasIntersection(&player.Pos, &bat[i]->Pos)) {
+				if (bat[i]->active) {
+					player.batCount++;
+					bat[i]->active = false;
+				}
 			}
 		}
-		}
-
 
 		//Update
 		player.update(deltaTime, mouseX, mouseY);
 
 		//player.Pos.x = mouseX;
 		//player.Pos.y = mouseY;
-		marksman.update(deltaTime, player.Pos);
+		for (int i = 0; i < 3; i++)
+		marksman[i]->update(deltaTime, player.Pos);
 
 		//foreground and midground
 		FRGD.update();
@@ -299,24 +338,24 @@ int main(int argc, char* argv[]) {
 		//Draw the BKGD
 		BKGD.draw(renderer);
 		//Draw the MDGD2
-		//MDGD2.draw(renderer);
+		MDGD2.draw(renderer);
 		//Draw the MDGD1
-		//MDGD1.draw(renderer);
+		MDGD1.draw(renderer);
 		//Draw the FRGD
-		//FRGD.draw(renderer);
+		FRGD.draw(renderer);
 
 		//draw the ammo
 		ammo.draw(renderer);
 		health.draw(renderer);
 		damage.draw(renderer);
 
-		for (int i = 0; i < 3; i++)
-		{
+		for (int i = 0; i < 3; i++) {
 			bat[i]->draw(renderer);
 		}
 
 		//draw enemy
-		marksman.draw(renderer);
+		for (int i = 0; i < 3; i++)
+		marksman[i]->draw(renderer);
 
 		//Draw the Player
 		player.draw(renderer);

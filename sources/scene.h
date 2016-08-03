@@ -49,6 +49,26 @@ public:
 
 	}
 
+	inline void move(float modifier, int direction, float deltaTime)
+	{
+		if(direction == 0)//up
+		{
+			pos_Y -= ((300 - modifier)* deltaTime);
+		}
+		else if(direction == 1)//down
+		{
+			pos_Y += ((300 - modifier)* deltaTime);
+		}
+		else if(direction == 2)//left
+		{
+			pos_X -= ((300 - modifier) * deltaTime);
+		}
+		else if(direction == 3)//right
+		{
+			pos_X += ((300 - modifier) * deltaTime);
+		}
+	}
+
 	void update() {
 		Pos.x = (int)(pos_X + 0.5f);
 		Pos.y = (int)(pos_Y + 0.5f);
