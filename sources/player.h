@@ -285,7 +285,7 @@ public:
 	void throwPumpkin() {
 		for (int i = 0; i < bulletList.size(); i++) {
 			if (bulletList[i]->active == false) {
-				bulletList[i]->fire(armAngle, Pos);
+				bulletList[i]->fire(armAngle, Pos, 58, 0);
 				break;
 			}
 		}

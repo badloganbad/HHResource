@@ -103,9 +103,9 @@ public:
 		}
 	}
 
-	void fire(float radians, SDL_Rect origin) {
-		pos_X = origin.x + 58;
-		pos_Y = origin.y;
+	void fire(float radians, SDL_Rect origin, int modX, int modY) {
+		pos_X = origin.x + modX;
+		pos_Y = origin.y + modY;
 		angle = radians;
 		active = true;
 	}
