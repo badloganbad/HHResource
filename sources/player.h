@@ -202,7 +202,7 @@ public:
 		double y = (armPos.y + (17)) - (my);
 		armAngle = atan2(y, x) * 180 / 3.14;
 
-		angle *= .985;// * deltaTime;
+		angle *= .995;// * deltaTime;
 
 		if (ammoCount < 0)
 			ammoCount = 0;

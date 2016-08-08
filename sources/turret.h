@@ -64,7 +64,7 @@ public:
 		//bullet setup
 		for (int i = 0; i < 10; i++) {
 			bulletList.push_back(
-				new Bullet(renderer, dir, "pumkinB.png", 0, 0));
+				new Bullet(renderer, dir, "bullet.png", 0, 0));
 			bulletList[i]->Pos.w = 16;
 			bulletList[i]->Pos.h = 16;
 		}

@@ -20,6 +20,7 @@
 #include "scene.h"
 #include "pickup.h"
 #include "turret.h"
+#include "chaseEnemy.h"
 
 using namespace std;
 
@@ -107,24 +108,29 @@ int main(int argc, char* argv[]) {
 
 	//create the pickups
 	Pickup * ammo[2];
-	ammo[0] = new Pickup(renderer, images_dir, "ammo+.png", 600, 400);
-	ammo[1] = new Pickup(renderer, images_dir, "ammo+.png", 1150, 400);
+	ammo[0] = new Pickup(renderer, images_dir, "pumkinB.png", 600, 400);
+	ammo[1] = new Pickup(renderer, images_dir, "pumkinB.png", 1150, 400);
 
-	Pickup * health[2]; 
-	health[0] = new Pickup(renderer, images_dir, "health+.png", 350, 350);
-	health[1] = new Pickup(renderer, images_dir, "health+.png", 1885, 350);
+	Pickup * health[2];
+	health[0] = new Pickup(renderer, images_dir, "spiritOrb.png", 350, 350);
+	health[1] = new Pickup(renderer, images_dir, "spiritOrb.png", 1885, 350);
 
 	Pickup *bat[3];
-	bat[0] = new Pickup(renderer, images_dir, "item.png", 500, -500);
-	bat[1] = new Pickup(renderer, images_dir, "item.png", 2700, -500);
-	bat[2] = new Pickup(renderer, images_dir, "item.png", 1800, 1000);
-	
+	bat[0] = new Pickup(renderer, images_dir, "bat.png", 500, -500);
+	bat[1] = new Pickup(renderer, images_dir, "bat.png", 2700, -500);
+	bat[2] = new Pickup(renderer, images_dir, "bat.png", 1800, 1000);
 
 	//Make the enemy turrets
 	Turret * marksman[3];
 	marksman[0] = new Turret(renderer, images_dir, 1175, 240);
 	marksman[1] = new Turret(renderer, images_dir, 1875, 240);
 	marksman[2] = new Turret(renderer, images_dir, 2515, 240);
+
+	//make the enemies that chase the player
+	ChaseEnemy * skull[3];
+	skull[0] = new ChaseEnemy(renderer, images_dir, 400, -500);
+	skull[1] = new ChaseEnemy(renderer, images_dir, 2600, -500);
+	skull[2] = new ChaseEnemy(renderer, images_dir, 1700, 1000);
 
 	BKGD.Pos.w = 1024;
 	BKGD.Pos.h = 768;
@@ -183,16 +189,14 @@ int main(int argc, char* argv[]) {
 				FRGD.move(0, down, deltaTime);
 				MDGD1.move(10, down, deltaTime);
 				MDGD2.move(20, down, deltaTime);
-				
+
 				//pickups
-				for (int i = 0; i < 2; i++)
-				{
+				for (int i = 0; i < 2; i++) {
 					ammo[i]->move(0, down, deltaTime);
 					health[i]->move(0, down, deltaTime);
 				}
 
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
 					bat[i]->move(0, down, deltaTime);
 				}
 				//bullets
@@ -202,11 +206,10 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				//enemies
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
+					skull[i]->move(0, down, deltaTime);
 					marksman[i]->move(0, down, deltaTime);
-					for (int j = 0; j < marksman[i]->bulletList.size(); j++)
-					{
+					for (int j = 0; j < marksman[i]->bulletList.size(); j++) {
 						marksman[i]->bulletList[j]->move(0, down, deltaTime);
 					}
 				}
@@ -215,11 +218,11 @@ int main(int argc, char* argv[]) {
 				player.move(0, up, deltaTime);
 
 			if (player.flipped) {
-				if(player.angle < 90)
-				player.angle += 100 * deltaTime;
+				if (player.angle < 45)
+					player.angle += 100 * deltaTime;
 			} else {
-				if(player.angle > -90)
-				player.angle -= 100 * deltaTime;
+				if (player.angle > -45)
+					player.angle -= 100 * deltaTime;
 			}
 		}
 
@@ -233,14 +236,12 @@ int main(int argc, char* argv[]) {
 				MDGD2.move(20, up, deltaTime);
 
 				//pickups
-				for (int i = 0; i < 2; i++)
-				{
+				for (int i = 0; i < 2; i++) {
 					ammo[i]->move(0, up, deltaTime);
 					health[i]->move(0, up, deltaTime);
 				}
 
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
 					bat[i]->move(0, up, deltaTime);
 				}
 				//bullets
@@ -250,11 +251,10 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				//enemies
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
+					skull[i]->move(0, up, deltaTime);
 					marksman[i]->move(0, up, deltaTime);
-					for (int j = 0; j < marksman[i]->bulletList.size(); j++)
-					{
+					for (int j = 0; j < marksman[i]->bulletList.size(); j++) {
 						marksman[i]->bulletList[j]->move(0, up, deltaTime);
 					}
 				}
@@ -263,11 +263,11 @@ int main(int argc, char* argv[]) {
 				player.move(0, down, deltaTime);
 
 			if (player.flipped) {
-				if(player.angle > -90)
-				player.angle -= 100 * deltaTime;
+				if (player.angle > -90)
+					player.angle -= 100 * deltaTime;
 			} else {
-				if(player.angle < 90)
-				player.angle += 100 * deltaTime;
+				if (player.angle < 90)
+					player.angle += 100 * deltaTime;
 			}
 		}
 
@@ -280,14 +280,12 @@ int main(int argc, char* argv[]) {
 				MDGD2.move(20, right, deltaTime);
 
 				//pickups
-				for (int i = 0; i < 2; i++)
-				{
+				for (int i = 0; i < 2; i++) {
 					ammo[i]->move(0, right, deltaTime);
 					health[i]->move(0, right, deltaTime);
 				}
 
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
 					bat[i]->move(0, right, deltaTime);
 				}
 
@@ -299,11 +297,10 @@ int main(int argc, char* argv[]) {
 				}
 
 				//enemies
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
+					skull[i]->move(0, right, deltaTime);
 					marksman[i]->move(0, right, deltaTime);
-					for (int j = 0; j < marksman[i]->bulletList.size(); j++)
-					{
+					for (int j = 0; j < marksman[i]->bulletList.size(); j++) {
 						marksman[i]->bulletList[j]->move(0, right, deltaTime);
 					}
 				}
@@ -326,14 +323,12 @@ int main(int argc, char* argv[]) {
 				MDGD2.move(20, left, deltaTime);
 
 				//pickups
-				for (int i = 0; i < 2; i++)
-				{
+				for (int i = 0; i < 2; i++) {
 					ammo[i]->move(0, left, deltaTime);
 					health[i]->move(0, left, deltaTime);
 				}
 
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
 					bat[i]->move(0, left, deltaTime);
 				}
 				for (int i = 0; i < player.bulletList.size(); i++) {
@@ -343,11 +338,10 @@ int main(int argc, char* argv[]) {
 				}
 
 				//enemies
-				for (int i = 0; i < 3; i++)
-				{
+				for (int i = 0; i < 3; i++) {
+					skull[i]->move(0, left, deltaTime);
 					marksman[i]->move(0, left, deltaTime);
-					for (int j = 0; j < marksman[i]->bulletList.size(); j++)
-					{
+					for (int j = 0; j < marksman[i]->bulletList.size(); j++) {
 						marksman[i]->bulletList[j]->move(0, left, deltaTime);
 					}
 				}
@@ -367,8 +361,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		//check for collision - ammo
-		for (int i = 0; i < 2; i++)
-		{
+		for (int i = 0; i < 2; i++) {
 			if (SDL_HasIntersection(&player.Pos, &ammo[i]->Pos)) {
 				if (ammo[i]->active) {
 					player.ammoCount = 10;
@@ -395,35 +388,76 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		//collision, player's bullets to turrets
-		for (int i = 0; i < player.bulletList.size(); i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (player.bulletList[i]->active)
-				{
-					if (marksman[j]->health>0)
-					{
-						if (3000 > ((player.bulletList[i]->Pos.x - (marksman[j]->Pos.x + marksman[j]->Pos.w * 3 / 4))*(player.bulletList[i]->Pos.x - (marksman[j]->Pos.x + marksman[j]->Pos.w * 3 / 4)) + (player.bulletList[i]->Pos.y - (marksman[j]->Pos.y + marksman[j]->Pos.h / 2))*(player.bulletList[i]->Pos.y - (marksman[j]->Pos.y + marksman[j]->Pos.h / 2))))
-						{
+		//collision, player's bullets to enemies
+		for (int i = 0; i < player.bulletList.size(); i++) {
+			for (int j = 0; j < 3; j++) {
+				if (player.bulletList[i]->active) {
+					if (marksman[j]->health > 0) { //if it hits a marksman thats alive
+						if (3000 //distance formula
+								> ((player.bulletList[i]->Pos.x
+										- (marksman[j]->Pos.x
+												+ marksman[j]->Pos.w * 3 / 4))
+										* (player.bulletList[i]->Pos.x
+												- (marksman[j]->Pos.x
+														+ marksman[j]->Pos.w * 3
+																/ 4))
+										+ (player.bulletList[i]->Pos.y
+												- (marksman[j]->Pos.y
+														+ marksman[j]->Pos.h / 2))
+												* (player.bulletList[i]->Pos.y
+														- (marksman[j]->Pos.y
+																+ marksman[j]->Pos.h
+																		/ 2)))) {
 							player.bulletList[i]->reset();
 							marksman[j]->health--;
 							marksman[j]->active = false;
 						}
+					}
+					if (skull[i]->health > 0) { // if it his a skull that is alive
+						if (1600 //distance formula
+								> ((player.bulletList[i]->Pos.x+16
+										- (skull[j]->Pos.x + skull[j]->Pos.w / 2))
+										* (player.bulletList[i]->Pos.x+16
+												- (skull[j]->Pos.x
+														+ skull[j]->Pos.w / 2))
+										+ (player.bulletList[i]->Pos.y+16
+												- (skull[j]->Pos.y
+														+ skull[j]->Pos.h / 2))
+												* (player.bulletList[i]->Pos.y+16
+														- (skull[j]->Pos.y
+																+ skull[j]->Pos.h
+																		/ 2)))) {
+							player.bulletList[i]->reset();
+							skull[j]->health--;
+							skull[j]->active = false;
+						}
+
 					}
 				}
 			}
 		}
 
 		//collision for enemies bullets to player
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < marksman[i]->bulletList.size(); j++)
-			{
-				if (marksman[i]->bulletList[j]->active)
-				{
-					if (3000 > (((player.Pos.x + player.Pos.w / 2) - (marksman[i]->bulletList[j]->Pos.x + marksman[i]->bulletList[j]->Pos.w / 2))*((player.Pos.x + player.Pos.w / 2) - (marksman[i]->bulletList[j]->Pos.x + marksman[i]->bulletList[j]->Pos.w / 2)) + ((player.Pos.y + player.Pos.h / 2) - (marksman[i]->bulletList[j]->Pos.y + marksman[i]->bulletList[j]->Pos.h / 2))*((player.Pos.y + player.Pos.h / 2) - (marksman[i]->bulletList[j]->Pos.y + marksman[i]->bulletList[j]->Pos.h / 2))))
-					{
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < marksman[i]->bulletList.size(); j++) {
+				if (marksman[i]->bulletList[j]->active) {
+					if (3000
+							> (((player.Pos.x + player.Pos.w / 2)
+									- (marksman[i]->bulletList[j]->Pos.x
+											+ marksman[i]->bulletList[j]->Pos.w
+													/ 2))
+									* ((player.Pos.x + player.Pos.w / 2)
+											- (marksman[i]->bulletList[j]->Pos.x
+													+ marksman[i]->bulletList[j]->Pos.w
+															/ 2))
+									+ ((player.Pos.y + player.Pos.h / 2)
+											- (marksman[i]->bulletList[j]->Pos.y
+													+ marksman[i]->bulletList[j]->Pos.h
+															/ 2))
+											* ((player.Pos.y + player.Pos.h / 2)
+													- (marksman[i]->bulletList[j]->Pos.y
+															+ marksman[i]->bulletList[j]->Pos.h
+																	/ 2)))) {
 						player.currentHealth -= 10;
 						marksman[i]->bulletList[j]->reset();
 					}
@@ -431,25 +465,44 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
+		//collision with chasing enemies to the player
+		for (int i = 0; i < 3; i++) {
+			if (skull[i]->active) {
+				if (2500
+						> (((player.Pos.x + player.Pos.w / 2)
+								- (skull[i]->Pos.x + skull[i]->Pos.w / 2))
+								* ((player.Pos.x + player.Pos.w / 2)
+										- (skull[i]->Pos.x + skull[i]->Pos.w / 2))
+								+ ((player.Pos.y + player.Pos.h / 2)
+										- (skull[i]->Pos.y + skull[i]->Pos.h / 2))
+										* ((player.Pos.y + player.Pos.h / 2)
+												- (skull[i]->Pos.y
+														+ skull[i]->Pos.h / 2)))) {
+					if (SDL_GetTicks() > skull[i]->attackTime) {
+						player.currentHealth -= 3;
+					}
+				}
+			}
+		}
+
 		//Update
 		player.update(deltaTime, mouseX, mouseY);
-		for (int i = 0; i < 3; i++)
-		marksman[i]->update(deltaTime, player.Pos);
+		for (int i = 0; i < 3; i++) {
+			marksman[i]->update(deltaTime, player.Pos);
+			skull[i]->update(deltaTime, player.Pos);
+		}
 
 		//pickups
-		for (int i = 0; i < 2; i++)
-		{
+		for (int i = 0; i < 2; i++) {
 			ammo[i]->update(deltaTime);
 			health[i]->update(deltaTime);
 			health[i]->bobble(deltaTime);
 		}
 
 		//bats
-		for (int i = 0; i < 3; i++)
-		{
+		for (int i = 0; i < 3; i++) {
 			bat[i]->update(deltaTime);
 		}
-		
 
 		//foreground and midground
 		FRGD.update();
@@ -470,8 +523,7 @@ int main(int argc, char* argv[]) {
 		FRGD.draw(renderer);
 
 		//draw the ammo
-		for (int i = 0; i < 2; i++)
-		{
+		for (int i = 0; i < 2; i++) {
 			ammo[i]->draw(renderer);
 			health[i]->draw(renderer);
 		}
@@ -481,8 +533,10 @@ int main(int argc, char* argv[]) {
 		}
 
 		//draw enemy
-		for (int i = 0; i < 3; i++)
-		marksman[i]->draw(renderer);
+		for (int i = 0; i < 3; i++) {
+			marksman[i]->draw(renderer);
+			skull[i]->draw(renderer);
+		}
 
 		instruct.draw(renderer);
 
@@ -493,10 +547,10 @@ int main(int argc, char* argv[]) {
 		SDL_RenderPresent(renderer);
 	}
 
-	// Close and destroy the window
+// Close and destroy the window
 	SDL_DestroyWindow(window);
 
-	// Clean up
+// Clean up
 	SDL_Quit();
 	return 0;
 }
