@@ -291,6 +291,15 @@ public:
 		}
 	}
 
+	~Player()
+	{
+		for (int i = 0; i < bulletList.size(); i++)
+		{
+			delete bulletList[i];
+		}
+		bulletList.clear();
+	}
+
 };
 
 #endif /* HHRESOURCE_SOURCES_PLAYER_H_ */

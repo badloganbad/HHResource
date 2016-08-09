@@ -547,6 +547,19 @@ int main(int argc, char* argv[]) {
 		SDL_RenderPresent(renderer);
 	}
 
+	for (int i = 0; i < 3; i++)
+	{
+		delete skull[i];
+		delete bat[i];
+		delete marksman[i];
+	}
+
+	for (int i = 0; i < 2; i++)
+	{
+		delete ammo[i];
+		delete health[i];
+	}
+
 // Close and destroy the window
 	SDL_DestroyWindow(window);
 

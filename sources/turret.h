@@ -170,6 +170,15 @@ public:
 		}
 	}
 
+	~Turret()
+	{
+		for (int i = 0; i < bulletList.size(); i++)
+		{
+			delete bulletList[i];
+		}
+		bulletList.clear();
+	}
+
 };
 
 #endif /* HHRESOURCE_SOURCES_TURRET_H_ */
