@@ -21,6 +21,7 @@
 #include "pickup.h"
 #include "turret.h"
 #include "chaseEnemy.h"
+#include "wall.h"
 
 using namespace std;
 
@@ -106,6 +107,12 @@ int main(int argc, char* argv[]) {
 	instruct.Pos.w = 256;
 	instruct.Pos.h = 100;
 
+	//make the wall list
+	Wall * walls[1];
+	walls[0] = new Wall(renderer, images_dir, "wall.png", 0, 480);
+	walls[0]->Pos.w = 900;
+	walls[0]->Pos.h = 100;
+
 	//create the pickups
 	Pickup * ammo[2];
 	ammo[0] = new Pickup(renderer, images_dir, "pumkinB.png", 600, 400);
@@ -131,6 +138,8 @@ int main(int argc, char* argv[]) {
 	skull[0] = new ChaseEnemy(renderer, images_dir, 400, -500);
 	skull[1] = new ChaseEnemy(renderer, images_dir, 2600, -500);
 	skull[2] = new ChaseEnemy(renderer, images_dir, 1700, 1000);
+
+	
 
 	BKGD.Pos.w = 1024;
 	BKGD.Pos.h = 768;
@@ -190,6 +199,8 @@ int main(int argc, char* argv[]) {
 				MDGD1.move(10, down, deltaTime);
 				MDGD2.move(20, down, deltaTime);
 
+				walls[0]->move(0, down, deltaTime);
+
 				//pickups
 				for (int i = 0; i < 2; i++) {
 					ammo[i]->move(0, down, deltaTime);
@@ -214,8 +225,13 @@ int main(int argc, char* argv[]) {
 					}
 				}
 
-			} else if (player.Pos.y > 0)
+			}
+			else if (player.Pos.y > 0)
 				player.move(0, up, deltaTime);
+				
+			////check wall collision
+			//if (SDL_HasIntersection(&walls[0]->Pos, &player.CollidePos))
+			//	player.move(0, down, deltaTime);
 
 			if (player.flipped) {
 				if (player.angle < 45)
@@ -234,6 +250,8 @@ int main(int argc, char* argv[]) {
 				FRGD.move(0, up, deltaTime);
 				MDGD1.move(10, up, deltaTime);
 				MDGD2.move(20, up, deltaTime);
+
+				walls[0]->move(0, up, deltaTime);
 
 				//pickups
 				for (int i = 0; i < 2; i++) {
@@ -259,8 +277,13 @@ int main(int argc, char* argv[]) {
 					}
 				}
 
-			} else if (player.Pos.y < 768 - 128)
+			}
+			else if (player.Pos.y < 768 - 128)
 				player.move(0, down, deltaTime);
+
+			////check wall collision
+			//if (SDL_HasIntersection(&walls[0]->Pos, &player.CollidePos))
+			//	player.move(0, up, deltaTime);
 
 			if (player.flipped) {
 				if (player.angle > -90)
@@ -278,6 +301,8 @@ int main(int argc, char* argv[]) {
 				FRGD.move(0, right, deltaTime);
 				MDGD1.move(10, right, deltaTime);
 				MDGD2.move(20, right, deltaTime);
+
+				walls[0]->move(0, right, deltaTime);
 
 				//pickups
 				for (int i = 0; i < 2; i++) {
@@ -305,8 +330,13 @@ int main(int argc, char* argv[]) {
 					}
 				}
 
-			} else if (player.Pos.x > 0)
+			}
+			else if (player.Pos.x > 0)
 				player.move(0, left, deltaTime);
+			
+			////check wall collision
+			//if (SDL_HasIntersection(&walls[0]->Pos, &player.CollidePos))
+			//	player.move(0, right, deltaTime);
 
 			if (player.flipped == false) {
 				player.flipped = true;
@@ -321,6 +351,8 @@ int main(int argc, char* argv[]) {
 				FRGD.move(0, left, deltaTime);
 				MDGD1.move(10, left, deltaTime);
 				MDGD2.move(20, left, deltaTime);
+
+				walls[0]->move(0, left, deltaTime);
 
 				//pickups
 				for (int i = 0; i < 2; i++) {
@@ -346,8 +378,13 @@ int main(int argc, char* argv[]) {
 					}
 				}
 
-			} else if (player.Pos.x < 1024 - 128)
+			}
+			else if (player.Pos.x < 1024 - 128)
 				player.move(0, right, deltaTime);
+
+			////check wall collision
+			//if (SDL_HasIntersection(&walls[0]->Pos, &player.CollidePos))
+			//	player.move(0, left, deltaTime);
 
 			if (player.flipped == true) {
 				player.flipped = false;
@@ -413,7 +450,7 @@ int main(int argc, char* argv[]) {
 							marksman[j]->active = false;
 						}
 					}
-					if (skull[i]->health > 0) { // if it his a skull that is alive
+					if (skull[j]->health > 0) { // if it hits a skull that is alive
 						if (1600 //distance formula
 								> ((player.bulletList[i]->Pos.x+16
 										- (skull[j]->Pos.x + skull[j]->Pos.w / 2))
@@ -485,12 +522,45 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
+		//player collision with walls
+		//top side
+		if (SDL_HasIntersection(&walls[0]->Pos, &player.Pos) && player.Pos.y < walls[0]->Pos.y)
+		{
+			if (player.Pos.y > 0)
+			player.move(0, up, deltaTime);
+		}
+
+		//bottom side
+		else if (SDL_HasIntersection(&walls[0]->Pos, &player.Pos) && player.Pos.y > walls[0]->Pos.y)
+		{
+			if (player.Pos.y < 768 - 128)
+			player.move(0, down, deltaTime);
+		}
+
+		//left side
+		else if (SDL_HasIntersection(&walls[0]->Pos, &player.Pos) && player.Pos.x < walls[0]->Pos.x)
+		{
+			if (player.Pos.x > 0)
+			player.move(0, left, deltaTime);
+		}
+
+		//right side
+		else if (SDL_HasIntersection(&walls[0]->Pos, &player.Pos) && player.Pos.x > walls[0]->Pos.x)
+		{
+			if (player.Pos.x < 1024 - 128)
+			player.move(0, right, deltaTime);
+		}
+
 		//Update
 		player.update(deltaTime, mouseX, mouseY);
 		for (int i = 0; i < 3; i++) {
 			marksman[i]->update(deltaTime, player.Pos);
 			skull[i]->update(deltaTime, player.Pos);
 		}
+
+		walls[0]->update(deltaTime);
+		//check wall collision
+		//walls[0]->checkCollision(&player);
 
 		//pickups
 		for (int i = 0; i < 2; i++) {
@@ -539,6 +609,8 @@ int main(int argc, char* argv[]) {
 		}
 
 		instruct.draw(renderer);
+
+		walls[0]->draw(renderer);
 
 		//Draw the Player
 		player.draw(renderer);

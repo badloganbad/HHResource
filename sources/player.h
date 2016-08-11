@@ -33,6 +33,7 @@ public:
 	string DIR; // = images_dir + "player.png";
 	SDL_Point Center;
 	SDL_Rect Pos;
+	SDL_Rect CollidePos;
 	SDL_Texture * PlayerIMAGE;
 
 	SDL_Point armCenter;
@@ -78,6 +79,10 @@ public:
 		Pos.y = y; // 320
 		Pos.w = 128;
 		Pos.h = 128;
+		CollidePos.x = x; // 0
+		CollidePos.y = y; // 320
+		CollidePos.w = 128;
+		CollidePos.h = 128;
 		Center.x = 64;
 		Center.y = 64;
 		PlayerIMAGE = IMG_LoadTexture(renderer, DIR.c_str());
@@ -185,6 +190,8 @@ public:
 		//Update player position code to account for precision loss
 		Pos.x = (int) (pos_X + 0.5f);
 		Pos.y = (int) (pos_Y + 0.5f);
+		CollidePos.x = (int)(pos_X + 0.5f);
+		CollidePos.y = (int)(pos_Y + 0.5f);
 
 		//for bobbing effect
 		bob += 3 * deltaTime;
