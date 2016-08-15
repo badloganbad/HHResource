@@ -135,7 +135,8 @@ int main(int argc, char* argv[]) {
 
 	//make the enemies that chase the player
 	ChaseEnemy * skull[3];
-	skull[0] = new ChaseEnemy(renderer, images_dir, 400, -500);
+	skull[0] = new ChaseEnemy(renderer, images_dir, 800, 350);
+	//skull[0] = new ChaseEnemy(renderer, images_dir, 400, -500);
 	skull[1] = new ChaseEnemy(renderer, images_dir, 2600, -500);
 	skull[2] = new ChaseEnemy(renderer, images_dir, 1700, 1000);
 
@@ -521,7 +522,7 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		}
-
+		/*
 		//player collision with walls
 		//top side
 		if (SDL_HasIntersection(&walls[0]->Pos, &player.Pos) && player.Pos.y < walls[0]->Pos.y)
@@ -550,6 +551,7 @@ int main(int argc, char* argv[]) {
 			if (player.Pos.x < 1024 - 128)
 			player.move(0, right, deltaTime);
 		}
+		*/
 
 		//Update
 		player.update(deltaTime, mouseX, mouseY);
@@ -610,7 +612,7 @@ int main(int argc, char* argv[]) {
 
 		instruct.draw(renderer);
 
-		walls[0]->draw(renderer);
+		//walls[0]->draw(renderer);
 
 		//Draw the Player
 		player.draw(renderer);
